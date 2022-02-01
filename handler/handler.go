@@ -2,12 +2,33 @@ package handler
 
 import (
 	"aircraftTracker/acdb"
+	"aircraftTracker/config/observer"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
 )
+
+func AddAircraftReg(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	switch r.Method {
+	case "PUT":
+		reg := mux.Vars(r)["reg"]
+		log.Printf("add aircraft registration '%v' to observation list", reg)
+		err := observer.Add(reg)
+		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte(fmt.Sprintf(`{"message": "%v"}`, err)))
+		} else {
+			w.WriteHeader(http.StatusOK)
+		}
+	default:
+		w.WriteHeader(http.StatusNotImplemented)
+		w.Write([]byte(`{"message": "not implemented"}`))
+	}
+}
 
 func GetAircraftData(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")

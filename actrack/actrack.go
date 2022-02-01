@@ -22,9 +22,9 @@ func InitAircraftData(myConfig config.Config) {
 		log.Fatalf("invalid configuration %+v", myConfig)
 	}
 
-	if err := updateAircraftData(myConfig.AircaftData); err != nil {
+	/*if err := updateAircraftData(myConfig.AircaftData); err != nil {
 		log.Fatalf(err.Error())
-	}
+	}*/
 
 }
 
@@ -104,7 +104,7 @@ func updateNeeded(filename string) bool {
 	yesterday := today.Add(-24 * time.Hour)
 
 	if yesterday.Before(acdb.ModTime()) {
-		log.Printf("no aircraft data update nedded")
+		log.Printf("no new aircraft data download nedded")
 		return false
 	}
 

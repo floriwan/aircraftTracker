@@ -8,8 +8,11 @@ import (
 )
 
 type Config struct {
-	AircaftData                string `yaml:"aircaftData"`
-	UpdateAircraftDataInterval int    `yaml:"updateAircraftDataInterval"`
+	AircaftData                             string `yaml:"aircaftData"`
+	UpdateAircraftDataInterval              int    `yaml:"updateAircraftDataInterval"`
+	UpdateAircraftFlightInformationInterval int    `yaml:"updateAircraftFlightInformationInterval"`
+	AircraftRegistrations                   string `yaml:"aircraftRegistrations"`
+	ObserverInterval                        string `yaml:"observerInterval"`
 }
 
 func (c Config) Print() string {

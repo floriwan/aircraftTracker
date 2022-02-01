@@ -25,14 +25,16 @@ type acInfo struct {
 
 var acReg map[string]acInfo
 
-func GetAcInfo(reg string) (acInfo, error) {
+func IsRegValid(reg string) bool {
+	_, ok := acReg[reg]
+	return ok
+}
 
+func GetAcInfo(reg string) (acInfo, error) {
 	if ac, ok := acReg[reg]; ok {
 		return ac, nil
 	}
-
 	return acInfo{}, fmt.Errorf("no aircraft with registration %v found", reg)
-
 }
 
 func Import(r io.Reader) {
