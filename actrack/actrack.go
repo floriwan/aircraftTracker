@@ -2,7 +2,7 @@ package actrack
 
 import (
 	"aircraftTracker/acdb"
-	"aircraftTracker/actrack/config"
+	"aircraftTracker/config"
 	"compress/gzip"
 	"fmt"
 	"io"
