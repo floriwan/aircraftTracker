@@ -23,7 +23,10 @@ func main() {
 		fmt.Errorf("can not open config file", err)
 	}
 
-	observer.Init(myConfig)
+	if err := observer.Init(myConfig); err != nil {
+		log.Fatal(err)
+	}
+
 	actrack.InitAircraftData(myConfig)
 	go actrack.StartDataUpdater(myConfig)
 
