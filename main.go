@@ -5,6 +5,7 @@ import (
 	"aircraftTracker/config"
 	"aircraftTracker/handler"
 	"aircraftTracker/observer"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -17,7 +18,12 @@ const (
 )
 
 func main() {
+
 	var myConfig config.Config
+	var discordMode bool
+
+	flag.BoolVar(&discordMode, "d", false, "update discord channel")
+
 	err := myConfig.ReadConfig(configFile)
 	if err != nil {
 		fmt.Errorf("can not open config file", err)

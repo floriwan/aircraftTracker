@@ -74,10 +74,12 @@ func startObserver(reg string, interval int) {
 			flights := flightaware.FlightInfo(reg, "", true)
 			if len(flights.Flights) == 0 {
 				log.Printf("no flight information for aircraft '%v'", reg)
+				// remove information from flight map
+				delete(flightData, reg)
 				continue
 			}
 
-			log.Printf("flight information for '%v' '%v' > '%v'", reg, flights.Flights[0].Origin.Code, flights.Flights[0].Destination.Code)
+			log.Printf("flight information for '%v' %v>%v", reg, flights.Flights[0].Origin.Code, flights.Flights[0].Destination.Code)
 			flightData[reg] = flights
 			//default:
 
