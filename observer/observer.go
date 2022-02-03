@@ -9,6 +9,8 @@ import (
 	"log"
 	"strconv"
 	"time"
+
+	flightaware "github.com/floriwan/flightaware/request"
 )
 
 type observer struct {
@@ -20,12 +22,14 @@ var regList []observer
 var interval int
 var observerFile string
 var quitChannels map[string]chan bool
+var flightData map[string]flightaware.Flights
 
 func Init(config config.Config) error {
 
 	interval, _ = strconv.Atoi(config.ObserverInterval)
 	observerFile = config.ObserverFile
 	quitChannels = make(map[string]chan bool)
+	flightData = make(map[string]flightaware.Flights)
 
 	// import observation list from file
 	if err := readList(); err != nil {
@@ -34,6 +38,10 @@ func Init(config config.Config) error {
 
 	log.Printf("observation list imported with %v aircrafts", len(regList))
 	return nil
+}
+
+func GetSize() int {
+	return len(regList)
 }
 
 func stopObserver(reg string) {
@@ -63,6 +71,14 @@ func startObserver(reg string, interval int) {
 			return
 		case <-updateInterval.C:
 			log.Printf("update information for registration '%v'", reg)
+			flights := flightaware.FlightInfo(reg, "", true)
+			if len(flights.Flights) == 0 {
+				log.Printf("no flight information for aircraft '%v'", reg)
+				continue
+			}
+
+			log.Printf("flight information for '%v' '%v' > '%v'", reg, flights.Flights[0].Origin.Code, flights.Flights[0].Destination.Code)
+			flightData[reg] = flights
 			//default:
 
 		}
@@ -126,6 +142,9 @@ func Remove(reg string) error {
 	// remove registration from registration list and save to file
 	regList = removeReg(regList, toRemove)
 	writeList()
+
+	// remove information from flight map
+	delete(flightData, reg)
 
 	return nil
 }

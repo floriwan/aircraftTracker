@@ -12,6 +12,12 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type stats struct {
+	Aircrafts int
+	Observer  int
+	Enroute   int
+}
+
 func HandleAircraftReg(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	reg := mux.Vars(r)["reg"]
@@ -36,51 +42,62 @@ func HandleAircraftReg(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func SearchAircraft(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	switch r.Method {
-	case "GET":
-
-		owner := r.URL.Query()["owner"]
-
-		// convert string slice int string and search for this owner
-		l := acdb.SearchOwner(strings.Join(owner, ""))
-		b, err := json.Marshal(l)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(fmt.Sprintf(`{"message": "error %v"}`, err)))
-		}
-
-		log.Printf("search for owner %v, return %v aircraft(s)\n", owner, len(l))
-
-		w.WriteHeader(http.StatusOK)
-		w.Write(b)
-
-	default:
+func GetStatistics(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusNotImplemented)
 		w.Write([]byte(`{"message": "not implemented"}`))
 	}
+
+	b, _ := json.Marshal(stats{Aircrafts: acdb.GetSize(), Observer: observer.GetSize(), Enroute: 0})
+
+	w.WriteHeader(http.StatusOK)
+	w.Write(b)
+
+}
+
+func SearchAircraft(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusNotImplemented)
+		w.Write([]byte(`{"message": "not implemented"}`))
+	}
+
+	owner := r.URL.Query()["owner"]
+
+	// convert string slice int string and search for this owner
+	l := acdb.SearchOwner(strings.Join(owner, ""))
+	b, err := json.Marshal(l)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(fmt.Sprintf(`{"message": "error %v"}`, err)))
+	}
+
+	log.Printf("search for owner %v, return %v aircraft(s)\n", owner, len(l))
+
+	w.WriteHeader(http.StatusOK)
+	w.Write(b)
 }
 
 func GetAircraftData(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	switch r.Method {
-	case "GET":
-		reg := mux.Vars(r)["reg"]
-		log.Printf("request aircraft registration '%v'\n", reg)
-		acInfo, err := acdb.GetAcInfo(reg)
-		if err != nil {
-			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte(`{"message": "not found"}`))
-		} else {
-			w.WriteHeader(http.StatusOK)
-			json.NewEncoder(w).Encode(acInfo)
-		}
 
-	default:
+	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusNotImplemented)
 		w.Write([]byte(`{"message": "not implemented"}`))
 	}
+
+	reg := mux.Vars(r)["reg"]
+	log.Printf("request aircraft registration '%v'\n", reg)
+	acInfo, err := acdb.GetAcInfo(reg)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte(`{"message": "not found"}`))
+	} else {
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(acInfo)
+	}
+
 }
 
 func Home(w http.ResponseWriter, r *http.Request) {

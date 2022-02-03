@@ -35,6 +35,7 @@ func main() {
 	r.HandleFunc("/data/{reg}", handler.GetAircraftData).Methods("GET")
 	r.HandleFunc("/reg/{reg}", handler.HandleAircraftReg)
 	r.HandleFunc("/search", handler.SearchAircraft).Methods(("GET"))
+	r.HandleFunc("/stats", handler.GetStatistics).Methods(("GET"))
 
 	log.Fatal(http.ListenAndServe(":8080", r))
 

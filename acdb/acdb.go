@@ -25,6 +25,9 @@ type acInfo struct {
 
 var acReg map[string]acInfo
 
+func GetSize() int {
+	return len(acReg)
+}
 func IsRegValid(reg string) bool {
 	_, ok := acReg[reg]
 	return ok
