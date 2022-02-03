@@ -18,13 +18,16 @@ type observer struct {
 
 var regList []observer
 var interval int
-
-const observerFile = "test"
+var observerFile string
+var quitChannels map[string]chan bool
 
 func Init(config config.Config) error {
 
 	interval, _ = strconv.Atoi(config.ObserverInterval)
+	observerFile = config.ObserverFile
+	quitChannels = make(map[string]chan bool)
 
+	// import observation list from file
 	if err := readList(); err != nil {
 		return err
 	}
@@ -33,14 +36,36 @@ func Init(config config.Config) error {
 	return nil
 }
 
+func stopObserver(reg string) {
+	quitChannels[reg] <- true
+	delete(quitChannels, reg)
+}
+
+func removeReg(slice []observer, i int) []observer {
+	copy(slice[i:], slice[i+1:])
+	return slice[:len(slice)-1]
+}
+
 func startObserver(reg string, interval int) {
 
+	// create quit channel in map
+	quit := make(chan bool)
+	quitChannels[reg] = quit
+
+	// time trigger channel
 	updateInterval := time.NewTicker((time.Duration(interval)) * time.Minute)
-	log.Printf("update aircraft position every %v minutes\n", interval)
+	log.Printf("start aircraft '%v' observer every %v minutes\n", reg, interval)
 
 	for {
-		log.Printf("update information for registration '%v'", reg)
-		<-updateInterval.C
+		select {
+		case <-quit:
+			log.Printf("stop observer for registration '%v'", reg)
+			return
+		case <-updateInterval.C:
+			log.Printf("update information for registration '%v'", reg)
+			//default:
+
+		}
 	}
 
 }
@@ -57,6 +82,11 @@ func readList() error {
 	if err != nil {
 		return fmt.Errorf("can not unmarshal observer list %v", err)
 	}
+
+	// start new observer for all registration
+	for k := range regList {
+		go startObserver(regList[k].Reg, regList[k].Interval)
+	}
 	return nil
 }
 
@@ -71,6 +101,32 @@ func writeList() error {
 	if err != nil {
 		log.Printf("can not export observer list to file '%v' %v\n", observerFile, err)
 	}
+	return nil
+}
+
+func Remove(reg string) error {
+
+	// search registration in registration list
+	toRemove := -1
+	for k, v := range regList {
+		if v.Reg == reg {
+			toRemove = k
+			break
+		}
+	}
+
+	if toRemove == -1 {
+		return fmt.Errorf("registration '%v' not found in observer list", reg)
+	}
+
+	// stop observation goroutine
+	log.Printf("remove registration '%v' from observer list", reg)
+	stopObserver(reg)
+
+	// remove registration from registration list and save to file
+	regList = removeReg(regList, toRemove)
+	writeList()
+
 	return nil
 }
 
@@ -91,9 +147,8 @@ func Add(reg string) error {
 		return err
 	}
 
+	// start the observer
 	go startObserver(reg, interval)
-
-	// TODO start new update method
 
 	return nil
 }

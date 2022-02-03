@@ -13,6 +13,7 @@ type Config struct {
 	UpdateAircraftFlightInformationInterval int    `yaml:"updateAircraftFlightInformationInterval"`
 	AircraftRegistrations                   string `yaml:"aircraftRegistrations"`
 	ObserverInterval                        string `yaml:"observerInterval"`
+	ObserverFile                            string `yaml:"observerFile"`
 }
 
 func (c Config) Print() string {

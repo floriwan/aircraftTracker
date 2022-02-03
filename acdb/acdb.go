@@ -30,6 +30,18 @@ func IsRegValid(reg string) bool {
 	return ok
 }
 
+func SearchOwner(owner string) []acInfo {
+
+	var found []acInfo
+
+	for _, v := range acReg {
+		if strings.Contains(v.Owneop, owner) {
+			found = append(found, v)
+		}
+	}
+	return found
+}
+
 func GetAcInfo(reg string) (acInfo, error) {
 	if ac, ok := acReg[reg]; ok {
 		return ac, nil

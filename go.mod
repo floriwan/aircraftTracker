@@ -3,6 +3,7 @@ module aircraftTracker
 go 1.17
 
 require (
+	github.com/floriwan/flightaware v0.0.0-20220203150135-dbfe60ced938
 	github.com/gorilla/mux v1.8.0
 	gopkg.in/yaml.v2 v2.4.0
 )

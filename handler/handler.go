@@ -2,21 +2,21 @@ package handler
 
 import (
 	"aircraftTracker/acdb"
-	"aircraftTracker/config/observer"
+	"aircraftTracker/observer"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
 
-func AddAircraftReg(w http.ResponseWriter, r *http.Request) {
+func HandleAircraftReg(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	reg := mux.Vars(r)["reg"]
 	switch r.Method {
 	case "PUT":
-		reg := mux.Vars(r)["reg"]
-		log.Printf("add aircraft registration '%v' to observation list", reg)
 		err := observer.Add(reg)
 		if err != nil {
 			w.WriteHeader(http.StatusNotFound)
@@ -24,6 +24,38 @@ func AddAircraftReg(w http.ResponseWriter, r *http.Request) {
 		} else {
 			w.WriteHeader(http.StatusOK)
 		}
+	case "DELETE":
+		err := observer.Remove(reg)
+		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte(fmt.Sprintf(`{"message": "%v"}`, err)))
+		}
+	default:
+		w.WriteHeader(http.StatusNotImplemented)
+		w.Write([]byte(`{"message": "not implemented"}`))
+	}
+}
+
+func SearchAircraft(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	switch r.Method {
+	case "GET":
+
+		owner := r.URL.Query()["owner"]
+
+		// convert string slice int string and search for this owner
+		l := acdb.SearchOwner(strings.Join(owner, ""))
+		b, err := json.Marshal(l)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(fmt.Sprintf(`{"message": "error %v"}`, err)))
+		}
+
+		log.Printf("search for owner %v, return %v aircraft(s)\n", owner, len(l))
+
+		w.WriteHeader(http.StatusOK)
+		w.Write(b)
+
 	default:
 		w.WriteHeader(http.StatusNotImplemented)
 		w.Write([]byte(`{"message": "not implemented"}`))

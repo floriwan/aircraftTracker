@@ -3,8 +3,8 @@ package main
 import (
 	"aircraftTracker/actrack"
 	"aircraftTracker/config"
-	"aircraftTracker/config/observer"
 	"aircraftTracker/handler"
+	"aircraftTracker/observer"
 	"fmt"
 	"log"
 	"net/http"
@@ -33,7 +33,8 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", handler.Home)
 	r.HandleFunc("/data/{reg}", handler.GetAircraftData).Methods("GET")
-	r.HandleFunc("/add/{reg}", handler.AddAircraftReg).Methods(("PUT"))
+	r.HandleFunc("/reg/{reg}", handler.HandleAircraftReg)
+	r.HandleFunc("/search", handler.SearchAircraft).Methods(("GET"))
 
 	log.Fatal(http.ListenAndServe(":8080", r))
 
