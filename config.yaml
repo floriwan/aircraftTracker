@@ -3,3 +3,5 @@ updateAircraftDataInterval: 1
 updateAircraftFlightInformationInterval: 5
 aircraftRegistrations: ac-registration
 observerInterval: 10
+observerFile: observationList
+aeroApiKey: xx
