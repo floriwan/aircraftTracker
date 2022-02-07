@@ -1,6 +1,7 @@
 package main
 
 import (
+	"aircraftTracker/acdb/discord"
 	"aircraftTracker/actrack"
 	"aircraftTracker/config"
 	"aircraftTracker/handler"
@@ -23,18 +24,28 @@ func main() {
 	var discordMode bool
 
 	flag.BoolVar(&discordMode, "d", false, "update discord channel")
+	flag.Parse()
 
 	err := myConfig.ReadConfig(configFile)
 	if err != nil {
 		fmt.Errorf("can not open config file", err)
 	}
 
+	// import aircarft registration database and start data updater
+	actrack.InitAircraftData(myConfig)
+	go actrack.StartDataUpdater(myConfig)
+
+	// start observer
 	if err := observer.Init(myConfig); err != nil {
 		log.Fatal(err)
 	}
+	defer observer.Close()
 
-	actrack.InitAircraftData(myConfig)
-	go actrack.StartDataUpdater(myConfig)
+	// in discord mode
+	if discordMode {
+		go discord.Start(myConfig, observer.AddReg)
+		defer discord.Dbot.Close()
+	}
 
 	r := mux.NewRouter()
 	r.HandleFunc("/", handler.Home)

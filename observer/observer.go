@@ -2,6 +2,7 @@ package observer
 
 import (
 	"aircraftTracker/acdb"
+	"aircraftTracker/acdb/discord"
 	"aircraftTracker/config"
 	"encoding/json"
 	"fmt"
@@ -23,6 +24,7 @@ var interval int
 var observerFile string
 var quitChannels map[string]chan bool
 var flightData map[string]flightaware.Flights
+var AddReg chan string
 
 func Init(config config.Config) error {
 
@@ -30,6 +32,7 @@ func Init(config config.Config) error {
 	observerFile = config.ObserverFile
 	quitChannels = make(map[string]chan bool)
 	flightData = make(map[string]flightaware.Flights)
+	AddReg = make(chan string)
 
 	// import observation list from file
 	if err := readList(); err != nil {
@@ -42,6 +45,10 @@ func Init(config config.Config) error {
 
 func GetSize() int {
 	return len(regList)
+}
+
+func Close() {
+	// TODO stop all observer goroutinges
 }
 
 func stopObserver(reg string) {
@@ -69,6 +76,11 @@ func startObserver(reg string, interval int) {
 		case <-quit:
 			log.Printf("stop observer for registration '%v'", reg)
 			return
+		case r := <-AddReg:
+			err := Add(r)
+			if err != nil {
+				discord.SendMessage(err.Error())
+			}
 		case <-updateInterval.C:
 			log.Printf("update information for registration '%v'", reg)
 			flights := flightaware.FlightInfo(reg, "", true)
@@ -78,11 +90,9 @@ func startObserver(reg string, interval int) {
 				delete(flightData, reg)
 				continue
 			}
-
 			log.Printf("flight information for '%v' %v>%v", reg, flights.Flights[0].Origin.Code, flights.Flights[0].Destination.Code)
 			flightData[reg] = flights
-			//default:
-
+			discord.SendMessage(fmt.Sprintf("flight '%v' %v>%v", reg, flights.Flights[0].Origin.Code, flights.Flights[0].Destination.Code))
 		}
 	}
 
