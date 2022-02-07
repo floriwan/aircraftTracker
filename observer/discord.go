@@ -1,4 +1,4 @@
-package discord
+package observer
 
 import (
 	"aircraftTracker/config"
@@ -15,13 +15,10 @@ import (
 var botId string
 var Dbot *discordgo.Session
 var updateHook string
-var addRegChannel chan<- string
 
-func Start(myConfig config.Config, addReg chan<- string) {
+func Start(myConfig config.Config) {
 
 	log.Println("starting discord bot")
-
-	addRegChannel = addReg
 
 	updateHook = myConfig.DiscordWebHook
 
@@ -50,12 +47,7 @@ func Start(myConfig config.Config, addReg chan<- string) {
 
 }
 
-func SendMessage(msg string) {
-
-	//curl -i -H "Accept: application/json"
-	// -H "Content-Type:application/json" -X POST
-	// --data "{\"content\": \"Posted Via Command line\"}"
-	// discord-webhook-link
+func sendMessage(msg string) {
 
 	rb, err := json.Marshal(map[string]string{"content": msg})
 	if err != nil {
@@ -63,14 +55,6 @@ func SendMessage(msg string) {
 	}
 	http.Post(updateHook, "application/json", bytes.NewBuffer(rb))
 
-	//Dbot.ChannelMessageSend()
-	// //Dbot..find("")
-	// c, err := Dbot.Channel(botId)
-	// if err != nil {
-	// 	log.Printf("can not create channel %v", err)
-	// }
-	//log.Printf("send message from bot to discords")
-	//Dbot.ChannelMessageSend(readyM.SessionID, "lucki lucki")
 }
 
 func readyHandler(s *discordgo.Session, m *discordgo.Ready) {
@@ -94,7 +78,7 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	if m.Content == "!help" {
-		_, _ = s.ChannelMessageSend(m.ChannelID, "some fancy help message")
+		_, _ = s.ChannelMessageSend(m.ChannelID, "!add <registration>; !list")
 	}
 
 	if strings.HasPrefix(m.Content, "!add") {
@@ -107,18 +91,24 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 			_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("received registration '%v' is not valid", rc[1]))
 			return
 		}
-
-		//err := observer.Add(rc[1])
-		//if err != nil {
-		//	_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("aircraft registration '%v' not found in database (%v)", rc[1], err))
-		//	return
-		//}
+		//_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("add aircraft '%v' to observation list", rc[1]))
+		err := Add(rc[1])
+		if err != nil {
+			_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%v", err.Error()))
+			return
+		}
 		_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("add aircraft '%v' to observation list", rc[1]))
-		addRegChannel <- rc[1]
 	}
 
-	////If we message ping to our bot in our discord it will return us pong .
-	//if m.Content == "ping" {
-	//	_, _ = s.ChannelMessageSend(m.ChannelID, "pong")
-	//}
+	if strings.HasPrefix(m.Content, "!list") {
+		l := GetObservationList()
+		var buffer bytes.Buffer
+		for k := range l {
+			buffer.WriteString("'")
+			buffer.WriteString(l[k].Reg)
+			buffer.WriteString("' ")
+		}
+		_, _ = s.ChannelMessageSend(m.ChannelID, buffer.String())
+	}
+
 }

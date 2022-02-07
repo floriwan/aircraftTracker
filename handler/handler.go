@@ -3,6 +3,7 @@ package handler
 import (
 	"aircraftTracker/acdb"
 	"aircraftTracker/observer"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -77,6 +78,21 @@ func SearchAircraft(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Write(b)
+}
+
+func GetObservationList(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	l := observer.GetObservationList()
+	var buffer bytes.Buffer
+	for k := range l {
+		buffer.WriteString("'")
+		buffer.WriteString(l[k].Reg)
+		buffer.WriteString("' ")
+	}
+	w.Write(buffer.Bytes())
+
 }
 
 func GetAircraftData(w http.ResponseWriter, r *http.Request) {

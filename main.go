@@ -1,7 +1,6 @@
 package main
 
 import (
-	"aircraftTracker/acdb/discord"
 	"aircraftTracker/actrack"
 	"aircraftTracker/config"
 	"aircraftTracker/handler"
@@ -43,8 +42,8 @@ func main() {
 
 	// in discord mode
 	if discordMode {
-		go discord.Start(myConfig, observer.AddReg)
-		defer discord.Dbot.Close()
+		observer.Start(myConfig)
+		defer observer.Dbot.Close()
 	}
 
 	r := mux.NewRouter()
@@ -53,6 +52,7 @@ func main() {
 	r.HandleFunc("/reg/{reg}", handler.HandleAircraftReg)
 	r.HandleFunc("/search", handler.SearchAircraft).Methods(("GET"))
 	r.HandleFunc("/stats", handler.GetStatistics).Methods(("GET"))
+	r.HandleFunc("/list", handler.GetObservationList).Methods(("GET"))
 
 	log.Fatal(http.ListenAndServe(":8080", r))
 

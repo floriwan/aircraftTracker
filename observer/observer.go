@@ -2,7 +2,6 @@ package observer
 
 import (
 	"aircraftTracker/acdb"
-	"aircraftTracker/acdb/discord"
 	"aircraftTracker/config"
 	"encoding/json"
 	"fmt"
@@ -24,15 +23,15 @@ var interval int
 var observerFile string
 var quitChannels map[string]chan bool
 var flightData map[string]flightaware.Flights
-var AddReg chan string
+var aeroApiKey string
 
 func Init(config config.Config) error {
 
 	interval, _ = strconv.Atoi(config.ObserverInterval)
 	observerFile = config.ObserverFile
+	aeroApiKey = config.AeroApiKey
 	quitChannels = make(map[string]chan bool)
 	flightData = make(map[string]flightaware.Flights)
-	AddReg = make(chan string)
 
 	// import observation list from file
 	if err := readList(); err != nil {
@@ -41,6 +40,10 @@ func Init(config config.Config) error {
 
 	log.Printf("observation list imported with %v aircrafts", len(regList))
 	return nil
+}
+
+func GetObservationList() []observer {
+	return regList
 }
 
 func GetSize() int {
@@ -76,28 +79,31 @@ func startObserver(reg string, interval int) {
 		case <-quit:
 			log.Printf("stop observer for registration '%v'", reg)
 			return
-		case r := <-AddReg:
-			err := Add(r)
-			if err != nil {
-				discord.SendMessage(err.Error())
-			}
 		case <-updateInterval.C:
 			log.Printf("update information for registration '%v'", reg)
-			flights := flightaware.FlightInfo(reg, "", true)
-			if len(flights.Flights) == 0 {
-				log.Printf("no flight information for aircraft '%v'", reg)
-				// remove information from flight map
-				delete(flightData, reg)
-				continue
+			f, err := getFlightInfo(reg)
+			if err != nil {
+				log.Printf("%v", err)
+			} else {
+				sendMessage(fmt.Sprintf("flight '%v' %v>%v", reg, f.Origin.Code, f.Destination.Code))
 			}
-			log.Printf("flight information for '%v' %v>%v", reg, flights.Flights[0].Origin.Code, flights.Flights[0].Destination.Code)
-			flightData[reg] = flights
-			discord.SendMessage(fmt.Sprintf("flight '%v' %v>%v", reg, flights.Flights[0].Origin.Code, flights.Flights[0].Destination.Code))
 		}
 	}
 
 }
 
+func getFlightInfo(reg string) (flightaware.Flight, error) {
+	rf := flightaware.FlightInfo(reg, aeroApiKey, false)
+	if len(rf.Flights) == 0 {
+		//log.Printf("no flight information for aircraft '%v'", reg)
+		// remove information from flight map
+		delete(flightData, reg)
+		return flightaware.Flight{}, fmt.Errorf("no flight information for aircraft '%v'", reg)
+	}
+	flightData[reg] = rf
+	return rf.Flights[0], nil
+
+}
 func readList() error {
 	log.Printf("import observer list '%v'\n", observerFile)
 	b, err := ioutil.ReadFile(observerFile)
