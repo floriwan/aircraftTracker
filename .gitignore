@@ -13,3 +13,9 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+# aircraft registration database from adsbexchange
+basic-ac-db.json.gz
+
+# hide my private config
+config/config.json
