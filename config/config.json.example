@@ -1,8 +1,26 @@
 {
   "tracker": {
-    "adsbexchangerapidapikey": "abcdefg",
-    "adsbexchangerapidapihost": "adsbexchange-com1.p.rapidapi.com",
-    "updateinterval": 1
+    "updateinterval": 60
+  },
+  "discord": {
+    "bottoken": "token",
+    "webhookid": "webhook id",
+    "webhooktoken": "webhook token"
+  },
+  "adsbexchange": {
+    "rapidapihost":"adsbexchange-com1.p.rapidapi.com",
+    "rapidapikey": "rapid api key"
+  },
+  "aircraftdatabase": {
+    "basicaircraftdatabasedownload": "https://downloads.adsbexchange.com/downloads/basic-ac-db.json.gz",
+    "databasefilename": "basic-ac-db.json.gz"
+  },
+  "aerodatabox": {
+    "rapidapihost": "aerodatabox.p.rapidapi.com",
+    "rapidapikey": "rapid api key"
+  },
+  "aircraftdatahistory": {
+    "maxhistorysize":100
   },
   "rest": {
     "port": 9876

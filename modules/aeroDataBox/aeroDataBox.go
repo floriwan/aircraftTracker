@@ -1,31 +1,37 @@
-package aerodatabox
+package aeroDataBox
 
 import (
+	httphelper "aircraftTracker/modules/http"
 	"aircraftTracker/types/aerodatabox"
+	"encoding/json"
+	"fmt"
+	"log"
+	"net/http"
+
+	"github.com/spf13/viper"
 )
 
-// var rapidApiKey string
-// var rapidApiHost string
 var FlightStatusResult []aerodatabox.FlightStatus
 
-// func init() {
-// 	rapidApiKey = viper.GetString("aerodatabox.rapidapikey")
-// 	rapidApiHost = viper.GetString("aerodatabox.rapidapihost")
-// }
+func RequestData(reg string) (data *aerodatabox.Aircraft, err error) {
 
-func RequestData(reg string) error {
+	url := fmt.Sprintf("https://aerodatabox.p.rapidapi.com/flights/reg/%v?withAircraftImage=false&withLocation=false", reg)
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Add("X-RapidAPI-Key", viper.GetString("aerodatabox.rapidapikey"))
+	req.Header.Add("X-RapidAPI-Host", viper.GetString("aerodatabox.rapidapihost"))
 
-	// url := fmt.Sprintf("https://aerodatabox.p.rapidapi.com/flights/reg/%v?withAircraftImage=false&withLocation=false", reg)
-	// req, _ := http.NewRequest("GET", url, nil)
-	// req.Header.Add("X-RapidAPI-Key", rapidApiKey)
-	// req.Header.Add("X-RapidAPI-Host", rapidApiHost)
+	b, err := httphelper.SendRequest(req)
+	if err != nil {
+		return nil, err
+	}
 
-	// b, err := httphelper.SendRequest(req)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	data = &aerodatabox.Aircraft{}
+	if err := json.Unmarshal(b, &data); err != nil {
+		log.Printf("can not unmarshal %v\n%v\n", string(b), err)
+		return nil, err
+	}
 
-	return nil
+	return data, nil
 }
 
 /*

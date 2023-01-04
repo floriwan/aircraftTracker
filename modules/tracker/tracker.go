@@ -2,6 +2,7 @@ package tracker
 
 import (
 	"aircraftTracker/modules/adsbexchange"
+	"aircraftTracker/modules/aeroDataBox"
 	"aircraftTracker/modules/aircraftDatabase"
 	"aircraftTracker/modules/flightDataHistory"
 	"fmt"
@@ -108,11 +109,20 @@ func updateAircraft(reg string) error {
 		return err
 	}
 
-	// if flight state changed, request addition flight data from aerodatabox
-	// and send message to discord
-	if flightDataHistory.FlightStateChanged(reg) {
-		sendDiscordMessage(reg)
+	// this is not the initial start and the first entry
+	// and no flight state change, nothing todo
+	if flightDataHistory.HistorySize(reg) > 1 && !flightDataHistory.FlightStateChanged(reg) {
+		return nil
 	}
+
+	dbox, err := aeroDataBox.RequestData(reg)
+	if err != nil {
+		log.Printf("aerodatabox request error: %v\n", err)
+	}
+
+	log.Printf("aerodatbox data: %v", dbox)
+
+	sendDiscordMessage(reg)
 
 	return nil
 }

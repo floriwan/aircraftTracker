@@ -24,8 +24,7 @@ func RequestData(reg string) (data *adsbexchange.AircraftPositionByRegistration,
 	}
 
 	data = &adsbexchange.AircraftPositionByRegistration{}
-	err = json.Unmarshal(b, &data)
-	if err != nil {
+	if err := json.Unmarshal(b, &data); err != nil {
 		log.Printf("can not unmarshal %v\n%v\n", string(b), err)
 		return nil, err
 	}
