@@ -1,0 +1,10 @@
+{
+  "tracker": {
+    "adsbexchangerapidapikey": "abcdefg",
+    "adsbexchangerapidapihost": "adsbexchange-com1.p.rapidapi.com",
+    "updateinterval": 1
+  },
+  "rest": {
+    "port": 9876
+  }
+}

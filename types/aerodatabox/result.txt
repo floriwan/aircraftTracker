@@ -1,0 +1,37 @@
+{
+  "id": 23431,
+  "reg": "D-AIUD",
+  "active": true,
+  "serial": "6033",
+  "hexIcao": "3C66A4",
+  "airlineName": "Lufthansa",
+  "iataCodeShort": "32A",
+  "icaoCode": "A320",
+  "model": "A320",
+  "modelCode": "320-214",
+  "numSeats": 168,
+  "rolloutDate": "2014-03-13",
+  "firstFlightDate": "2014-03-13",
+  "deliveryDate": "2014-03-24",
+  "registrationDate": "2014-03-24",
+  "typeName": "Airbus A320 (Sharklets)",
+  "numEngines": 2,
+  "engineType": "Jet",
+  "isFreighter": false,
+  "productionLine": "Airbus A320",
+  "ageYears": 8.8,
+  "verified": true,
+  "image": {
+    "url": "https://farm6.staticflickr.com/5543/9486512167_c4406dc98a_z.jpg",
+    "webUrl": "https://www.flickr.com/photos/41153475@N04/9486512167/",
+    "author": "markyharky",
+    "title": "D-AIZP A320 Lufthansa",
+    "description": "D-AIZP A320 Lufthansa",
+    "license": "AttributionCC",
+    "htmlAttributions": [
+      "Original of \"<span property='dc:title' itemprop='name'>D-AIZP A320 Lufthansa</span>\" by  <a rel='dc:creator nofollow' property='cc:attributionName' href='https://www.flickr.com/photos/41153475@N04/9486512167/' target='_blank'><span itemprop='producer'>markyharky</span></a>.",
+      "Shared and hosted by <span itemprop='publisher'>Flickr</span> under <a target=\"_blank\" rel=\"license cc:license nofollow\" href=\"https://creativecommons.org/licenses/by/2.0/\">CC BY</a>"
+    ]
+  },
+  "numRegistrations": 1
+}
